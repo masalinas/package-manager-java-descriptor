@@ -1,0 +1,26 @@
+{
+  "name": "package-manager-java-descriptor",
+  "version": "1.0.0",
+  "description": "Java Package Manager Descriptor",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masalinas/package-manager-java-descriptor.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/masalinas/package-manager-java-descriptor/issues"
+  },
+  "homepage": "https://github.com/masalinas/package-manager-java-descriptor#readme",
+  "dependencies": {
+    "ansi-colors": "^4.1.3",
+    "cli-progress": "^3.11.2",
+    "command-line-args": "^5.2.1",
+    "csv-writer": "^1.6.0",
+    "shelljs": "^0.8.5"
+  }  
+}
