@@ -21,6 +21,7 @@
     "cli-progress": "^3.11.2",
     "command-line-args": "^5.2.1",
     "csv-writer": "^1.6.0",
+    "pom-parser": "^1.2.0",
     "shelljs": "^0.8.5"
-  }  
+  }
 }

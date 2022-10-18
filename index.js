@@ -4,6 +4,9 @@ const fs = require('fs');
 const cliProgress = require('cli-progress');
 const colors = require('ansi-colors');
 const createCsvWriter = require('csv-writer').createObjectCsvWriter;
+const pomParser = require("pom-parser");
+const homedir = require('os').homedir();
+const path = require('path')
 
 // create a new progress bar instance and use shades_classic theme
 const bar = new cliProgress.SingleBar({
@@ -31,35 +34,76 @@ let dependencies = [];
 // dependency recursive counter and descriptor
 function dependencyCounter(data) {
     let selector;
-    let package;
+    let artifact;
     let packageItems;
+    let subFolders;
+    let pomPath;
 
-    data.split(/\r?\n/).forEach(line =>  {
-        selector = line.substring(0, 10);
+    let groupId;
+    let artifactId;
+    let version;
+    let package;
 
-        if (selector === '[INFO]    ') {
-            package = line.substring(10);
-            packageItems = package.split(':');
+    //(async function() {
+        data.split(/\r?\n/).forEach(line =>  {
+            selector = line.substring(0, 10);
 
-            if (packageItems[2] !== 'pom') {
-                dependencyCount = dependencyCount + 1;
+            if (selector === '[INFO]    ') {
+                artifact = line.substring(10);
+                artifactItems = artifact.split(':');
 
-                dependencies.push({
-                    name: packageItems[1],
-                    version: packageItems[3],
-                    description: null,
-                    license: null,
-                    maintainers: null
-                });
+                groupId = artifactItems[0];
+                artifactId = artifactItems[1];
+                package = artifactItems[2];
+                version = artifactItems[3];
+
+                if (package !== 'pom') {
+                    dependencyCount = dependencyCount + 1;
+
+                    // build pom file
+                    subFolders = groupId.split('.');
+                    pomPath = path.join(homedir, '.m2', 'repository');
+                    subFolders.forEach(subFolder => {
+                        pomPath = path.join(pomPath, subFolder);
+                    });
+
+                    pomPath = path.join(pomPath, artifactId, version, artifactId + '-' + version + '.pom');
+
+                    (async function() {
+                        // parse pom file
+                        await pomParser.parse({filePath: pomPath}, function(err, pomResponse) {
+                            if (err) {
+                                console.log("ERROR: " + err);
+                                process.exit(1);
+                            }
+                    
+                            console.log(pomResponse.pomObject.project.description);
+                    
+                            dependencies.push({
+                                name: artifactItems[1],
+                                version: artifactItems[3],
+                                description: pomResponse.pomObject.project.description,
+                                license: null,
+                                maintainers: null
+                            });
+                        });
+                    })();
+
+                    /*dependencies.push({
+                        name: artifactItems[1],
+                        version: artifactItems[3],
+                        description: null,
+                        license: null,
+                        maintainers: null
+                    });*/
+                }
             }
-        }
-    });
+        });
+    //})()
 }
 
 try {
     let result = fs.readFileSync('dependencies.txt', 'utf8');
-
-    dependencyCounter(result);
 
     // calculate deep dependencies and start progress bar
     dependencyCounter(result);
